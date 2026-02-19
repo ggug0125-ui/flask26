@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+{% block title %}마이페이지 | LHJ System{% endblock %}
+
+{% block content %}
+<div class="page-center">
+  <div class="login-card">
+    <div class="login-app-icon" aria-hidden="true">
+      <span>LHJ<br>System</span>
+    </div>
+
+    <div class="login-title">마이페이지</div>
+    <p class="login-sub">내 계정 정보를 확인할 수 있어요</p>
+
+    <div class="login-field">
+      <div class="login-label">이름</div>
+      <div class="mypage-box" style="width:100%;border:1px solid rgba(233,236,244,.95);background:#f7f8fd;border-radius:14px;padding:14px;font-size:14px;font-weight:800;">
+        {{ user.name }}
+      </div>
+      <small class="mypage-muted">권한: {{ user.role.upper() }}</small>
+    </div>
+
+    <div class="login-field">
+      <div class="login-label">아이디</div>
+      <div class="mypage-box" style="width:100%;border:1px solid rgba(233,236,244,.95);background:#f7f8fd;border-radius:14px;padding:14px;font-size:14px;font-weight:800;">
+        {{ user.uid }}
+      </div>
+    </div>
+
+    <div class="login-field">
+      <div class="login-label">가입일</div>
+      <div class="mypage-box" style="width:100%;border:1px solid rgba(233,236,244,.95);background:#f7f8fd;border-radius:14px;padding:14px;font-size:14px;font-weight:800;">
+        {{ user.created_at.strftime('%Y-%m-%d') if user.created_at else "날짜없음" }}
+      </div>
+    </div>
+
+    <div class="login-field">
+      <div class="login-label">작성 게시글</div>
+      <div class="mypage-box" style="width:100%;border:1px solid rgba(233,236,244,.95);background:#f7f8fd;border-radius:14px;padding:14px;font-size:14px;font-weight:800;">
+        {{ board_count }}건
+      </div>
+      <small class="mypage-muted">
+        <a class="login-link" href="/board/my">내 게시글</a> ·
+        <a class="login-link" href="/score/my">내 성적</a>
+      </small>
+    </div>
+
+    <div class="mypage-actions">
+      <a class="login-btn" href="/member/edit">정보 수정</a>
+
+      {% if user.role in ['admin','manager'] %}
+        <a class="btn-outline" href="/admin/members">관리</a>
+      {% else %}
+        <a class="btn-outline" href="/score/my">성적 보기</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

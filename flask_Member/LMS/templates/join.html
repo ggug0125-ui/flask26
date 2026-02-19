@@ -1,0 +1,254 @@
+{% extends "layout.html" %}
+{% block title %}회원가입 | LHJ System{% endblock %}
+
+{% block content %}
+<style>
+  /* join page only */
+  .join-wrap{
+    min-height: calc(100vh - 180px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 36px 0 46px;
+  }
+
+  .join-card{
+    width: min(520px, 100%);
+    background:#fff;
+    border:1px solid rgba(233,236,244,.9);
+    border-radius: 22px;
+    box-shadow: 0 18px 40px rgba(16,24,40,.10);
+    padding: 34px 34px 26px;
+  }
+
+  .join-title{
+    text-align:center;
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing:-.6px;
+  }
+
+  .join-sub{
+    text-align:center;
+    margin: 0 0 22px;
+    color:#6b7280;
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .field{ margin-top: 14px; }
+  .label{
+    display:block;
+    font-weight: 800;
+    margin-bottom: 8px;
+    font-size: 14px;
+    letter-spacing:-.2px;
+  }
+
+  .input, .select{
+    width:100%;
+    border:1px solid rgba(233,236,244,.95);
+    background:#f7f8fd;
+    border-radius: 14px;
+    padding: 14px 14px;
+    outline:none;
+    font-size: 14px;
+    transition:.15s ease;
+  }
+  .input:focus, .select:focus{
+    background:#fff;
+    border-color: rgba(109,93,252,.55);
+    box-shadow: 0 0 0 4px rgba(109,93,252,.12);
+  }
+
+  .hint{
+    margin-top: 8px;
+    font-size: 12px;
+    color:#9aa3b2;
+    font-weight: 600;
+  }
+
+  .btn-row{
+    display:flex;
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  .btn-ghost{
+    flex:1;
+    border:1px solid rgba(233,236,244,.95);
+    background:#f7f8fd;
+    border-radius: 14px;
+    padding: 13px 14px;
+    font-weight: 900;
+    cursor:pointer;
+  }
+
+  .btn-primary{
+    flex:1;
+    border:0;
+    cursor:pointer;
+    border-radius: 14px;
+    padding: 13px 14px;
+    font-weight: 900;
+    color:white;
+    background: linear-gradient(135deg,#6d5dfc,#7c3aed);
+    box-shadow: 0 14px 25px rgba(124,58,237,.22);
+    transition:.15s ease;
+  }
+  .btn-primary:hover{ transform: translateY(-1px); }
+
+  .bottom{
+    margin-top: 14px;
+    text-align:center;
+    font-size: 13px;
+    color:#6b7280;
+    font-weight: 700;
+  }
+  .bottom a{
+    color:#6d5dfc;
+    font-weight: 900;
+    text-decoration:none;
+  }
+  .bottom a:hover{ text-decoration:underline; }
+
+  .pw-msg{
+  margin-top:6px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.pw-ok{
+  color:#16a34a;   /* 초록 */
+}
+
+.pw-error{
+  color:#ef4444;   /* 빨강 */
+}
+
+</style>
+
+<div class="join-wrap">
+  <div class="join-card">
+    <h1 class="join-title">회원가입</h1>
+    <p class="join-sub">필수 정보만 입력해서 빠르게 가입할 수 있어요</p>
+
+    <form method="post" action="/join">
+      <!-- 아이디 -->
+      <div class="field">
+        <label class="label" for="uid">아이디</label>
+        <input class="input" id="uid" name="uid" type="text"
+               placeholder="아이디를 입력하세요 (3자 이상)" required>
+        <div id="uid-msg" class="pw-msg"></div>
+      </div>
+      <!-- 이름 -->
+      <div class="field">
+        <label class="label" for="name">이름</label>
+        <input class="input" id="name" name="name" type="text" placeholder="이름을 입력하세요" required>
+      </div>
+
+      <!-- 비밀번호 -->
+      <div class="field">
+        <label class="label" for="password">비밀번호</label>
+        <input class="input" id="password" name="password" type="password" placeholder="비밀번호를 입력하세요" required>
+        <div class="hint">8자 이상 권장 (영문/숫자 조합)</div>
+      </div>
+
+      <!-- 비밀번호 확인 -->
+      <div class="field">
+        <label class="label" for="pw2">비밀번호 확인</label>
+        <input class="input" id="pw2" name="pw2" type="password" placeholder="비밀번호를 한번 더 입력하세요" required>
+        <div id="pw-msg" class="pw-msg"></div>
+      </div>
+
+      <!-- 권한 -->
+      <input type="hidden" name="role" value="user">
+
+      <div class="btn-row">
+        <button class="btn-ghost" type="button" onclick="history.back()">취소</button>
+        <button class="btn-primary" type="submit">가입하기</button>
+      </div>
+    </form>
+
+    <div class="bottom">
+      이미 계정이 있으신가요? <a href="/login">로그인</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const pw = document.getElementById("password");
+  const pw2 = document.getElementById("pw2");
+  const msg = document.getElementById("pw-msg");
+  const form = document.querySelector("form");
+
+  function checkPassword(){
+      if(pw2.value.length === 0){
+          msg.textContent = "";
+          return;
+      }
+
+      if(pw.value === pw2.value){
+          msg.textContent = "✔ 비밀번호가 일치합니다.";
+          msg.className = "pw-msg pw-ok";
+      }else{
+          msg.textContent = "❌ 비밀번호가 일치하지 않습니다.";
+          msg.className = "pw-msg pw-error";
+      }
+  }
+
+  pw.addEventListener("input", checkPassword);
+  pw2.addEventListener("input", checkPassword);
+
+  const uidInput = document.getElementById("uid");
+// 아이디 입력칸
+
+const uidMsg = document.getElementById("uid-msg");
+// 메시지 영역
+
+let uidTimer = null;
+// 입력 딜레이용
+
+uidInput.addEventListener("input", function(){
+
+    clearTimeout(uidTimer);
+    // 이전 타이머 제거
+
+    const uid = uidInput.value.trim();
+
+    if(uid.length < 3){
+        uidMsg.textContent = "아이디는 3자 이상 입력하세요.";
+        uidMsg.className = "pw-msg pw-error";
+        return;
+    }
+
+    uidTimer = setTimeout(async () => {
+
+        const res = await fetch(`/member/check-uid?uid=${encodeURIComponent(uid)}`);
+        // 서버 중복 체크 요청
+
+        const data = await res.json();
+
+        if(data.exists){
+            uidMsg.textContent = "❌ 이미 사용중인 아이디입니다.";
+            uidMsg.className = "pw-msg pw-error";
+        }else{
+            uidMsg.textContent = "✔ 사용 가능한 아이디입니다.";
+            uidMsg.className = "pw-msg pw-ok";
+        }
+
+    }, 300); // 입력 멈춘 후 0.3초 뒤 실행
+});
+
+  form.addEventListener("submit", function(e){
+      if(pw.value !== pw2.value){
+          e.preventDefault();
+          alert("비밀번호가 일치하지 않습니다.");
+          pw2.focus();
+      }
+  });
+</script>
+{% endblock %}

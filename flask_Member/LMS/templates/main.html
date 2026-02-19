@@ -1,0 +1,337 @@
+{% extends "layout.html" %}
+{% block title %}홈 | LHJ System{% endblock %}
+
+{% block head_extra %}
+<style>
+  /* ✅ 메인 전용: main- 접두어만 사용 (충돌 방지) */
+
+  .main-hero{
+    padding: 34px 0 18px;
+    text-align:center;
+  }
+  .main-hero h1{
+    margin: 10px 0 10px;
+    font-size: clamp(44px, 6vw, 78px);
+    letter-spacing:-1.5px;
+    line-height: 1.05;
+    color: #5a44ff;
+    text-shadow: 0 10px 35px rgba(109,93,252,.18);
+  }
+  .main-hero p{
+    margin:0;
+    color: #6b7280;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .main-features{
+    margin-top: 26px;
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+
+  .main-card{
+    background: #fff;
+    border: 1px solid rgba(233,236,244,.9);
+    border-radius: 22px;
+    box-shadow: 0 10px 25px rgba(16,24,40,.10);
+    padding: 26px 26px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .main-card::before{
+    content:"";
+    position:absolute; inset:auto auto -50px -50px;
+    width:140px; height:140px; border-radius: 40px;
+    background: radial-gradient(circle at 30% 30%, rgba(109,93,252,.22), transparent 60%);
+    transform: rotate(18deg);
+  }
+
+  .main-icon{
+    width:62px; height:62px;
+    border-radius: 18px;
+    display:grid; place-items:center;
+    margin: 6px auto 14px;
+    background: linear-gradient(135deg, rgba(109,93,252,.14), rgba(124,58,237,.14));
+    border: 1px solid rgba(124,58,237,.18);
+  }
+  .main-icon i{ font-size: 22px; color:#7c3aed; }
+
+  .main-card h3{
+    margin: 0;
+    text-align:center;
+    font-size: 22px;
+    letter-spacing:-.3px;
+    font-weight: 900;
+  }
+  .main-card p{
+    margin: 12px auto 18px;
+    max-width: 280px;
+    text-align:center;
+    color: #6b7280;
+    line-height:1.5;
+    font-weight: 500;
+  }
+
+  .main-ghost{
+    width: 100%;
+    border: 0;
+    background: #f4f6ff;
+    border: 1px solid rgba(109,93,252,.12);
+    color:#1f2a44;
+    font-weight: 900;
+    border-radius: 14px;
+    padding: 12px 14px;
+    cursor:pointer;
+    transition:.15s ease;
+    box-shadow: 0 10px 18px rgba(16,24,40,.05);
+  }
+  .main-ghost:hover{ background: #edf0ff; transform: translateY(-1px); }
+
+  .main-grid3{
+    margin: 30px 0 40px;
+    display:grid;
+    grid-template-columns: 1.1fr .9fr 1.1fr;
+    gap: 22px;
+  }
+
+  .main-panel{
+    background: #fff;
+    border: 1px solid rgba(233,236,244,.9);
+    border-radius: 22px;
+    box-shadow: 0 10px 25px rgba(16,24,40,.10);
+    overflow:hidden;
+  }
+  .main-panel-head{
+    padding: 18px 18px 12px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap: 10px;
+    border-bottom: 1px solid rgba(233,236,244,.9);
+    background: linear-gradient(180deg, rgba(109,93,252,.06), transparent);
+  }
+  .main-panel-title{
+    display:flex; align-items:center; gap:10px;
+    font-weight: 900;
+  }
+  .main-panel-title i{ color:#6d5dfc; }
+
+  .main-more{
+    font-weight: 900;
+    color:#5a44ff;
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+  .main-more:hover{ background: rgba(109,93,252,.10); }
+
+  .main-panel-body{ padding: 14px 18px 18px; }
+
+  .main-list{ display:flex; flex-direction:column; gap: 14px; }
+  .main-item{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(233,236,244,.9);
+  }
+  .main-item:last-child{ border-bottom:0; padding-bottom:0; }
+
+  .main-item h4{
+    margin:0 0 6px;
+    font-size: 15px;
+    font-weight: 900;
+  }
+  .main-meta{
+    color:#6b7280;
+    font-size: 12px;
+    display:flex; gap:10px; align-items:center;
+  }
+
+  .main-rank{ display:flex; flex-direction:column; gap: 12px; }
+  .main-rank-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(233,236,244,.9);
+  }
+  .main-rank-row:last-child{ border-bottom:0; }
+
+  .main-badge{
+    width:28px; height:28px; border-radius: 10px;
+    display:grid; place-items:center;
+    color:white; font-weight: 900;
+    background: linear-gradient(135deg, #6d5dfc, #7c3aed);
+    box-shadow: 0 10px 18px rgba(124,58,237,.22);
+    flex: 0 0 auto;
+  }
+  .main-who{ display:flex; align-items:center; gap: 10px; min-width: 0; }
+  .main-who-name{ font-weight: 900; }
+  .main-who-class{ color:#6b7280; font-size: 12px; margin-top:2px; }
+  .main-score{ font-weight: 900; color:#5a44ff; }
+
+  .main-prod{ display:flex; flex-direction:column; gap: 14px; }
+  .main-prod-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(233,236,244,.9);
+  }
+  .main-prod-row:last-child{ border-bottom:0; padding-bottom:0; }
+  .main-prod-left{ display:flex; gap: 12px; align-items:center; min-width: 0; }
+  .main-thumb{
+    width:44px; height:44px; border-radius: 14px;
+    display:grid; place-items:center;
+    background: linear-gradient(135deg, rgba(56,189,248,.18), rgba(109,93,252,.18));
+    border: 1px solid rgba(56,189,248,.20);
+    flex: 0 0 auto;
+  }
+  .main-thumb i{ color: #4c3ef0; }
+  .main-prod-name{ font-weight: 900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .main-prod-meta{ color:#6b7280; font-size: 12px; display:flex; gap:8px; align-items:center; margin-top:4px; }
+  .main-stars{ color: #f59e0b; }
+  .main-price{ font-weight: 900; }
+
+  @media (max-width: 980px){
+    .main-features{ grid-template-columns: 1fr; }
+    .main-grid3{ grid-template-columns: 1fr; }
+    .main-hero{ padding-top: 20px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="main-hero">
+  <h1>L.H.J Service</h1>
+  <p>최고의 서비스를 제공합니다</p>
+
+  <section class="main-features">
+    <div class="main-card">
+      <div class="main-icon"><i class="fa-regular fa-comments"></i></div>
+      <h3>게시판</h3>
+      <p>공지사항, 자유게시판, Q&amp;A를 확인할 수 있습니다.</p>
+      <button class="main-ghost" onclick="location.href='/board'">바로가기</button>
+    </div>
+
+    <div class="main-card">
+      <div class="main-icon"><i class="fa-solid fa-chart-column"></i></div>
+      <h3>성적관리</h3>
+      <p>개인별 성적 조회 및 관리 기능을 제공합니다.</p>
+      <button class="main-ghost" onclick="location.href='/score'">바로가기</button>
+    </div>
+
+    <div class="main-card">
+      <div class="main-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+      <h3>상품몰</h3>
+      <p>교재, 굿즈, 온라인 상품을 구매할 수 있습니다.</p>
+      <button class="main-ghost" onclick="location.href='/shop'">바로가기</button>
+    </div>
+  </section>
+</section>
+
+<section class="main-grid3">
+  <div class="main-panel">
+    <div class="main-panel-head">
+      <div class="main-panel-title"><i class="fa-regular fa-bell"></i> 최근 공지사항</div>
+      <a class="main-more" href="/board">더보기 →</a>
+    </div>
+    <div class="main-panel-body">
+      <div class="main-list">
+        <div class="main-item">
+          <div>
+            <h4>2024학년도 2학기 중간고사 일정 안내</h4>
+            <div class="main-meta"><span>2024-03-15</span> <span><i class="fa-regular fa-eye"></i> 342</span></div>
+          </div>
+        </div>
+        <div class="main-item">
+          <div>
+            <h4>학부모 상담 주간 운영 안내</h4>
+            <div class="main-meta"><span>2024-03-14</span> <span><i class="fa-regular fa-eye"></i> 256</span></div>
+          </div>
+        </div>
+        <div class="main-item">
+          <div>
+            <h4>온라인 강의 플랫폼 업데이트 안내</h4>
+            <div class="main-meta"><span>2024-03-09</span> <span><i class="fa-regular fa-eye"></i> 421</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-panel">
+    <div class="main-panel-head">
+      <div class="main-panel-title"><i class="fa-solid fa-trophy"></i> 우수 학생 현황</div>
+      <a class="main-more" href="/score">더보기 →</a>
+    </div>
+    <div class="main-panel-body">
+      <div class="main-rank">
+        <div class="main-rank-row">
+          <div class="main-who">
+            <div class="main-badge">1</div>
+            <div>
+              <div class="main-who-name">이서연</div>
+              <div class="main-who-class">3학년 A반</div>
+            </div>
+          </div>
+          <div class="main-score">96.0</div>
+        </div>
+
+        <div class="main-rank-row">
+          <div class="main-who">
+            <div class="main-badge">2</div>
+            <div>
+              <div class="main-who-name">김도현</div>
+              <div class="main-who-class">3학년 B반</div>
+            </div>
+          </div>
+          <div class="main-score">94.0</div>
+        </div>
+
+        <div class="main-rank-row">
+          <div class="main-who">
+            <div class="main-badge">3</div>
+            <div>
+              <div class="main-who-name">이하윤</div>
+              <div class="main-who-class">3학년 A반</div>
+            </div>
+          </div>
+          <div class="main-score">94.0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-panel">
+    <div class="main-panel-head">
+      <div class="main-panel-title"><i class="fa-solid fa-star"></i> 추천 상품</div>
+      <a class="main-more" href="/shop">더보기 →</a>
+    </div>
+    <div class="main-panel-body">
+      <div class="main-prod">
+        <div class="main-prod-row">
+          <div class="main-prod-left">
+            <div class="main-thumb"><i class="fa-solid fa-comment-dots"></i></div>
+            <div style="min-width:0;">
+              <div class="main-prod-name">영어 회화 마스터 클래스</div>
+              <div class="main-prod-meta"><span class="main-stars">★ 5</span> <span>온라인</span></div>
+            </div>
+          </div>
+          <div class="main-price">180,000원</div>
+        </div>
+
+        <div class="main-prod-row">
+          <div class="main-prod-left">
+            <div class="main-thumb"><i class="fa-solid fa-gift"></i></div>
+            <div style="min-width:0;">
+              <div class="main-prod-name">LHJ 프리미엄 필기구 세트</div>
+              <div class="main-prod-meta"><span class="main-stars">★ 4.9</span> <span>굿즈</span></div>
+            </div>
+          </div>
+          <div class="main-price">35,000원</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

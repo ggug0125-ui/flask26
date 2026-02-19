@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block title %}회원정보 수정 | LHJ System{% endblock %}
+
+{% block content %}
+<div class="page-center">
+  <div class="login-card">
+    <div class="login-app-icon" aria-hidden="true">
+      <span>LHJ<br>System</span>
+    </div>
+
+    <div class="login-title">회원정보 수정</div>
+    <p class="login-sub">내 계정 정보를 변경할 수 있어요</p>
+
+    <form method="post" action="/member/edit">
+      <div class="login-field">
+        <label class="login-label" for="name">이름</label>
+        <input class="login-input" id="name" name="name" type="text"
+               value="{{ user.name if user.name else session.get('user_name','') }}" required>
+      </div>
+
+      <div class="login-field">
+        <label class="login-label" for="password">새 비밀번호</label>
+        <input class="login-input" id="password" name="password" type="password"
+               placeholder="변경하지 않으면 비워두세요">
+      </div>
+
+      {% if session.get('user_role') in ['admin','manager'] %}
+      <div class="login-field">
+        <label class="login-label" for="role">권한</label>
+        <select class="login-input" id="role" name="role">
+          <option value="user" {% if (user.role if user.role else session.get('user_role')) == 'user' %}selected{% endif %}>일반회원</option>
+          <option value="manager" {% if (user.role if user.role else session.get('user_role')) == 'manager' %}selected{% endif %}>매니저</option>
+          <option value="admin" {% if (user.role if user.role else session.get('user_role')) == 'admin' %}selected{% endif %}>관리자</option>
+        </select>
+        <small class="mypage-muted">※ 관리자/매니저만 권한 변경 가능</small>
+      </div>
+      {% endif %}
+
+      <div class="mypage-actions">
+        <button class="login-btn" type="submit">저장</button>
+        <a class="btn-outline" href="/mypage">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
