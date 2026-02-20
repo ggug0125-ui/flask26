@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from LMS.service import MemberService
+from LMS.service.BoardService import BoardService
+from LMS.common import Session
 
 app = Flask(__name__)
 app.secret_key = "fffffff"
@@ -55,8 +57,6 @@ def member_check_uid():                 # 아이디 중복체크
         "ok": True,
         "exists": exists
     })
-
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():                              # 로그인
@@ -191,6 +191,175 @@ def admin_member_active():
     if success:
         return f"<script>alert('{msg}'); location.href='/admin/members';</script>"
     return f"<script>alert('{msg}'); history.back();</script>"
+
+##################### 게시판 #######################################################################
+@app.route("/board/list")
+def board_list():                            # 게시글 전체보기
+    board_type = request.args.get("type", "notice")
+    # ?type=notice/free/qna (기본 notice)
+
+    keyword = (request.args.get("q") or "").strip()
+    # ?q=검색어
+
+    boards = BoardService.list(board_type=board_type, keyword=keyword)
+    # DB에서 목록 가져오기
+
+    return render_template("board_list.html",
+                           boards=boards,
+                           board_type=board_type,
+                           keyword=keyword)
+
+@app.route("/board/write", methods=["GET", "POST"])
+def board_write():                          # 게시글 등록
+    if "user_id" not in session:
+        return "<script>alert('로그인이 필요합니다.');location.href='/login';</script>"
+
+    if request.method == "GET":
+        return render_template("board_write.html")
+
+    title = (request.form.get("title") or "").strip()
+    content = (request.form.get("content") or "").strip()
+    board_type = request.form.get("board_type", "notice")
+    is_pinned = 1 if request.form.get("is_pinned") == "on" else 0
+    display_date = request.form.get("display_date") or None
+
+    if not title or not content:
+        return "<script>alert('제목과 내용을 입력하세요.');history.back();</script>"
+    conn = Session.get_connection()
+    try:
+        with conn.cursor() as cursor:
+            sql = """
+                INSERT INTO boards
+                (member_id, title, content, board_type, is_pinned, display_date)
+                VALUES (%s,%s,%s,%s,%s,%s)
+            """
+            cursor.execute(sql, (
+                session["user_id"],
+                title,
+                content,
+                board_type,
+                is_pinned,
+                display_date
+            ))
+        conn.commit()
+    finally:
+        conn.close()
+    return redirect(url_for("board_list"))
+
+@app.route('/board/view/<int:board_id>')
+def board_view(board_id):                   # 게시글 상세보기
+
+    conn = Session.get_connection()
+    try:
+        with conn.cursor() as cursor:
+            #조회수 +1 (먼저 증가)
+            cursor.execute("""
+                UPDATE boards
+                SET view_count = view_count + 1
+                WHERE id=%s
+            """, (board_id,))
+            conn.commit()
+            #게시글 + 작성자 조회
+            cursor.execute("""
+                SELECT b.*, m.name, m.uid
+                FROM boards b
+                JOIN members m ON b.member_id = m.id
+                WHERE b.id=%s
+            """, (board_id,))
+            board = cursor.fetchone()
+            if not board:
+                return "<script>alert('존재하지 않는 글');history.back();</script>"
+
+            #댓글 + 작성자
+            cursor.execute("""
+                SELECT c.*, m.name, m.uid
+                FROM board_comments c
+                JOIN members m ON c.member_id = m.id
+                WHERE c.board_id=%s
+                ORDER BY COALESCE(c.parent_id, c.id), c.id
+            """, (board_id,))
+            comments = cursor.fetchall()
+
+        return render_template(
+            'board_view.html',
+            board=board,
+            comments=comments
+        )
+    finally:
+        conn.close()
+
+@app.post("/board/comment/add")
+def board_comment_add():
+    if "user_id" not in session:
+        return "<script>alert('로그인이 필요합니다.');history.back();</script>"
+
+    board_id_raw = request.form.get("board_id")
+    if not board_id_raw or not board_id_raw.isdigit():
+        return "<script>alert('잘못된 요청입니다.');history.back();</script>"
+
+    board_id = int(board_id_raw)
+    content = (request.form.get("content") or "").strip()
+    parent_id = (request.form.get("parent_id") or "").strip()
+
+    if not content:
+        return "<script>alert('댓글 내용을 입력하세요.');history.back();</script>"
+
+    parent_id = int(parent_id) if parent_id.isdigit() else None
+
+    conn = Session.get_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO board_comments(board_id, member_id, content, parent_id)
+                VALUES (%s, %s, %s, %s)
+            """, (board_id, session["user_id"], content, parent_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+    return redirect(f"/board/view/{board_id}")
+
+
+@app.post("/board/like/toggle")
+def board_like_toggle():
+    if "user_id" not in session:
+        return jsonify({"ok": False, "msg": "login_required"}), 401
+
+    data = request.get_json(silent=True) or {}
+    board_id_raw = data.get("board_id")
+
+    if not board_id_raw or not str(board_id_raw).isdigit():
+        return jsonify({"ok": False, "msg": "invalid_board_id"}), 400
+
+    board_id = int(board_id_raw)
+    member_id = session["user_id"]
+
+    conn = Session.get_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT id FROM board_likes
+                WHERE board_id=%s AND member_id=%s
+            """, (board_id, member_id))
+            row = cursor.fetchone()
+
+            if row:
+                cursor.execute("DELETE FROM board_likes WHERE id=%s", (row["id"],))
+                liked = False
+            else:
+                cursor.execute("""
+                    INSERT INTO board_likes(board_id, member_id)
+                    VALUES (%s,%s)
+                """, (board_id, member_id))
+                liked = True
+
+            cursor.execute("SELECT COUNT(*) AS cnt FROM board_likes WHERE board_id=%s", (board_id,))
+            cnt = cursor.fetchone()["cnt"]
+
+        conn.commit()
+        return jsonify({"ok": True, "liked": liked, "count": cnt})
+    finally:
+        conn.close()
 
 
 

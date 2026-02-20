@@ -1,0 +1,357 @@
+{% extends "layout.html" %}
+{% block title %}게시판 | LHJ System{% endblock %}
+
+{% block content %}
+<style>
+  /* board page only */
+  .board-wrap{
+    padding: 18px 0 6px;
+  }
+
+  .board-hero{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom: 14px;
+  }
+  .board-hero h2{
+    margin:0;
+    font-size:34px;
+    font-weight:900;
+    letter-spacing:-.02em;
+  }
+  .board-hero p{
+    margin:6px 0 0;
+    color: var(--muted);
+    font-weight:700;
+  }
+
+  .board-card{
+    background:#fff;
+    border:1px solid rgba(233,236,244,.9);
+    border-radius:22px;
+    box-shadow: 0 16px 40px rgba(16,24,40,.08);
+    padding: 16px;
+  }
+
+  .board-top{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .tabs{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap: wrap;
+  }
+  .tab{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    font-weight:900;
+    text-decoration:none;
+    border:1px solid rgba(233,236,244,.9);
+    background: #f5f6ff;
+    color:#111827;
+    transition:.15s ease;
+  }
+  .tab:hover{
+    transform: translateY(-1px);
+  }
+  .tab.active{
+    background: linear-gradient(135deg, var(--p1), var(--p2));
+    color:#fff;
+    border-color: transparent;
+    box-shadow: 0 12px 24px rgba(124,58,237,.22);
+  }
+  .tab i{ opacity:.9; }
+
+  .write-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:0;
+    cursor:pointer;
+    font-weight:900;
+    padding: 12px 16px;
+    border-radius: 14px;
+    color:white;
+    background: linear-gradient(135deg, var(--p1), var(--p2));
+    box-shadow: 0 12px 24px rgba(124,58,237,.22);
+    transition:.15s ease;
+    text-decoration:none;
+  }
+  .write-btn:hover{ transform: translateY(-1px); }
+
+  .toolbar{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .search{
+    flex: 1;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#f7f8ff;
+    border:1px solid rgba(233,236,244,.9);
+    border-radius: 16px;
+    padding: 10px 12px;
+    min-width: 260px;
+  }
+  .search i{ color:#6b7280; }
+  .search input{
+    flex:1;
+    border:0;
+    outline:0;
+    background:transparent;
+    font-weight:800;
+    color:#111827;
+    padding: 6px 4px;
+  }
+  .search button{
+    border:0;
+    cursor:pointer;
+    font-weight:900;
+    padding: 10px 14px;
+    border-radius: 14px;
+    color:white;
+    background: linear-gradient(135deg, var(--p1), var(--p2));
+    box-shadow: 0 10px 18px rgba(124,58,237,.18);
+  }
+
+  .hint{
+    color: var(--muted);
+    font-weight:700;
+    font-size: 13px;
+  }
+
+  .table-wrap{
+    overflow:auto;
+    border-radius: 18px;
+    border:1px solid rgba(233,236,244,.9);
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    min-width: 940px;
+    background:#fff;
+  }
+  thead th{
+    text-align:left;
+    font-size: 13px;
+    color:#374151;
+    padding: 14px 12px;
+    border-bottom: 1px solid rgba(233,236,244,.9);
+    background: #fbfbff;
+    font-weight: 900;
+  }
+  tbody td{
+    padding: 14px 12px;
+    border-bottom: 1px solid rgba(233,236,244,.65);
+    font-weight: 700;
+    color:#111827;
+    vertical-align: middle;
+  }
+  tbody tr:hover{
+    background: rgba(109,93,252,.04);
+  }
+
+  .title-cell{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .title-link{
+    font-weight: 900;
+    text-decoration:none;
+  }
+  .meta{
+    display:inline-flex;
+    gap:10px;
+    align-items:center;
+    color: #6b7280;
+    font-weight: 800;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    border: 1px solid rgba(233,236,244,.9);
+    white-space: nowrap;
+  }
+  .badge-pin{
+    background:#ffe4e6;
+    color:#dc2626;
+    border-color: rgba(220,38,38,.15);
+  }
+  .badge-notice{
+    background:#e0e7ff;
+    color:#3730a3;
+    border-color: rgba(55,48,163,.15);
+  }
+  .badge-free{
+    background:#ecfeff;
+    color:#0e7490;
+    border-color: rgba(14,116,144,.15);
+  }
+  .badge-qna{
+    background:#ecfdf5;
+    color:#059669;
+    border-color: rgba(5,150,105,.15);
+  }
+
+  .empty{
+    padding: 18px;
+    color: var(--muted);
+    font-weight: 800;
+  }
+
+  @media (max-width: 820px){
+    .board-hero h2{ font-size: 28px; }
+  }
+</style>
+
+<div class="board-wrap">
+  <!-- 상단 제목 -->
+  <div class="board-hero">
+    <div>
+      <h2>게시판</h2>
+      <p>공지사항, 자유게시판, Q&A를 확인할 수 있습니다.</p>
+    </div>
+
+    <!-- 글쓰기: 아직 write 라우트 없으면 숨기고 나중에 붙여도 됨 -->
+    <a class="write-btn" href="/board/write">
+      <i class="fa-solid fa-pen-to-square"></i> 게시글 작성
+    </a>
+  </div>
+
+  <div class="board-card">
+    <!-- 탭 -->
+    <div class="board-top">
+      <div class="tabs">
+        <a class="tab {% if board_type=='notice' %}active{% endif %}" href="/board/list?type=notice">
+          <i class="fa-solid fa-bullhorn"></i> 공지사항
+        </a>
+        <a class="tab {% if board_type=='free' %}active{% endif %}" href="/board/list?type=free">
+          <i class="fa-solid fa-comments"></i> 자유게시판
+        </a>
+        <a class="tab {% if board_type=='qna' %}active{% endif %}" href="/board/list?type=qna">
+          <i class="fa-solid fa-circle-question"></i> Q&A
+        </a>
+      </div>
+
+      <div class="hint">
+        {% if keyword %}
+          “{{ keyword }}” 검색 결과
+        {% else %}
+          최신 글을 확인하세요
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 검색 -->
+    <form class="toolbar" method="get" action="/board/list">
+      <input type="hidden" name="type" value="{{ board_type }}">
+      <div class="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input name="q" value="{{ keyword }}" placeholder="제목 또는 내용으로 검색..." />
+        <button type="submit">검색</button>
+      </div>
+    </form>
+
+    <!-- 리스트 테이블 -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+        <tr>
+          <th style="width:80px;">번호</th>
+          <th style="width:130px;">구분</th>
+          <th>제목</th>
+          <th style="width:190px;">작성자</th>
+          <th style="width:160px;">작성일</th>
+          <th style="width:90px;">조회</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for b in boards %}
+          <tr>
+            <td>{{ b.id }}</td>
+
+            <td>
+              {% if b.is_pinned == 1 %}
+                <span class="badge badge-pin"><i class="fa-solid fa-thumbtack"></i> 상단고정</span>
+              {% else %}
+                {% if b.board_type == 'notice' %}
+                  <span class="badge badge-notice">공지</span>
+                {% elif b.board_type == 'free' %}
+                  <span class="badge badge-free">자유</span>
+                {% else %}
+                  <span class="badge badge-qna">Q&A</span>
+                {% endif %}
+              {% endif %}
+            </td>
+
+            <td>
+              <div class="title-cell">
+                <!-- 상세 라우트는 나중에 만들거라서 일단 링크 형태만 -->
+                <a class="title-link" href="/board/view/{{ b.id }}">
+                  {{ b.title }}
+                </a>
+              </div>
+
+              <div class="meta">
+                <span><i class="fa-regular fa-clock"></i>
+                  {{ b.display_date if b.display_date else b.created_at }}
+                </span>
+                <span><i class="fa-regular fa-heart"></i>
+                  {{ b.like_count}}
+                </span>
+
+                <span><i class="fa-regular fa-comment-dots"></i> {{ b.comment_count}}</span>
+
+              </div>
+            </td>
+
+            <td>{{ b.writer_name }} ({{ b.writer_uid }})</td>
+
+            <td>
+              {{ b.display_date if b.display_date else b.created_at }}
+            </td>
+
+            <td>{{ b.view_count }}</td>
+          </tr>
+        {% endfor %}
+
+        {% if boards|length == 0 %}
+          <tr>
+            <td colspan="6" class="empty">게시글이 없습니다.</td>
+          </tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

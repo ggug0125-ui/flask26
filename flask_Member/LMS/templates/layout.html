@@ -419,7 +419,7 @@
 
       <nav class="menu" aria-label="main">
         <a href="/" class="{% if path == '/' %}active{% endif %}">홈</a>
-        <a href="/board" class="{% if path.startswith('/board') %}active{% endif %}">게시판</a>
+        <a href="/board/list" class="{% if path.startswith('/board') %}active{% endif %}">게시판</a>
         <a href="/score" class="{% if path.startswith('/score') %}active{% endif %}">성적관리</a>
         <a href="/shop" class="{% if path.startswith('/shop') %}active{% endif %}">상품몰</a>
         {% if 'user_id' in session and role in ['admin','manager'] %}

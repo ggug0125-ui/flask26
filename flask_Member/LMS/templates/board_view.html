@@ -1,0 +1,401 @@
+{% extends "layout.html" %}
+{% block title %}게시글 | LHJ System{% endblock %}
+
+{% block content %}
+<style>
+  /* board view page only */
+  .view-wrap{ padding:18px 0 6px; }
+
+  .view-card{
+    background:#fff;
+    border:1px solid rgba(233,236,244,.9);
+    border-radius:22px;
+    box-shadow: 0 16px 40px rgba(16,24,40,.08);
+    padding: 22px;
+  }
+
+  .badges{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    border: 1px solid rgba(233,236,244,.9);
+    white-space: nowrap;
+  }
+  .badge-pin{
+    background:#ffe4e6;
+    color:#dc2626;
+    border-color: rgba(220,38,38,.15);
+  }
+  .badge-notice{
+    background:#e0e7ff;
+    color:#3730a3;
+    border-color: rgba(55,48,163,.15);
+  }
+  .badge-free{
+    background:#ecfeff;
+    color:#0e7490;
+    border-color: rgba(14,116,144,.15);
+  }
+  .badge-qna{
+    background:#ecfdf5;
+    color:#059669;
+    border-color: rgba(5,150,105,.15);
+  }
+
+  .view-title{
+    margin: 0;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -.02em;
+  }
+
+  .meta{
+    margin-top: 10px;
+    color: var(--muted);
+    font-weight: 800;
+    display:flex;
+    gap:14px;
+    flex-wrap: wrap;
+    align-items:center;
+  }
+  .meta i{ opacity:.9; }
+
+  .content{
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top:1px solid rgba(233,236,244,.9);
+    white-space: pre-wrap;
+    line-height: 1.7;
+    font-weight: 650;
+  }
+
+  .actions{
+    margin-top: 18px;
+    display:flex;
+    gap:10px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items:center;
+  }
+
+  .btns-left, .btns-right{
+    display:flex;
+    gap:10px;
+    flex-wrap: wrap;
+    align-items:center;
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-weight: 900;
+    border:1px solid rgba(233,236,244,.9);
+    background:#fff;
+    cursor:pointer;
+    text-decoration:none;
+    box-shadow: 0 10px 18px rgba(16,24,40,.06);
+    transition:.15s ease;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+
+  .btn-primary{
+    border:0;
+    color:#fff;
+    background: linear-gradient(135deg, var(--p1), var(--p2));
+    box-shadow: 0 12px 24px rgba(124,58,237,.22);
+  }
+
+  .btn-danger{
+    border:0;
+    color:#fff;
+    background: linear-gradient(135deg, #ef4444, #f97316);
+    box-shadow: 0 12px 24px rgba(239,68,68,.20);
+  }
+
+  /* comment area */
+  .comment-card{
+    margin-top: 16px;
+    background:#fff;
+    border:1px solid rgba(233,236,244,.9);
+    border-radius:22px;
+    box-shadow: 0 16px 40px rgba(16,24,40,.08);
+    padding: 18px;
+  }
+
+  .comment-title{
+    margin:0 0 12px;
+    font-weight: 900;
+    font-size: 16px;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap:10px;
+    flex-wrap: wrap;
+  }
+
+  .comment-item{
+    border:1px solid rgba(233,236,244,.9);
+    border-radius: 16px;
+    padding: 12px 12px;
+    margin-bottom: 10px;
+    background:#fbfbff;
+  }
+
+  .reply{
+    margin-left: 26px;
+    background:#f7f8ff;
+  }
+
+  .comment-meta{
+    color: var(--muted);
+    font-weight: 800;
+    font-size: 12px;
+    display:flex;
+    justify-content: space-between;
+    gap:10px;
+    align-items:center;
+    margin-bottom:6px;
+    flex-wrap: wrap;
+  }
+  .comment-meta-left{
+    display:flex;
+    gap:10px;
+    flex-wrap: wrap;
+    align-items:center;
+  }
+
+  .comment-content{
+    white-space: pre-wrap;
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .reply-btn{
+    border: 0;
+    cursor:pointer;
+    font-weight: 900;
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(109,93,252,.12);
+    color:#4c3ef0;
+  }
+
+  .reply-form{
+    margin-top:10px;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .reply-form textarea{
+    flex:1;
+    min-height: 60px;
+    border-radius: 14px;
+    padding: 10px 12px;
+    border:1px solid rgba(233,236,244,.9);
+    background:#f7f8ff;
+    resize:vertical;
+    font-weight: 700;
+  }
+  .reply-form button{
+    border:0;
+    cursor:pointer;
+    font-weight: 900;
+    padding: 10px 14px;
+    border-radius: 14px;
+    color:white;
+    background: linear-gradient(135deg, var(--p1), var(--p2));
+    box-shadow: 0 10px 18px rgba(124,58,237,.18);
+  }
+
+  .comment-form{
+    margin-top: 12px;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .comment-form textarea{
+    flex:1;
+    min-height: 74px;
+    border-radius: 16px;
+    padding: 12px 14px;
+    border:1px solid rgba(233,236,244,.9);
+    background:#f7f8ff;
+    resize:vertical;
+    font-weight: 700;
+  }
+  .comment-form button{
+    border:0;
+    cursor:pointer;
+    font-weight: 900;
+    padding: 12px 16px;
+    border-radius: 14px;
+    color:white;
+    background: linear-gradient(135deg, var(--p1), var(--p2));
+    box-shadow: 0 10px 18px rgba(124,58,237,.22);
+  }
+
+  .muted{
+    color: var(--muted);
+    font-weight: 800;
+    font-size: 12px;
+  }
+</style>
+
+<div class="view-wrap">
+
+  <!-- ===== 게시글 카드 ===== -->
+  <div class="view-card">
+    <div class="badges">
+      {% if board.is_pinned == 1 %}
+        <span class="badge badge-pin"><i class="fa-solid fa-thumbtack"></i> 상단고정</span>
+      {% else %}
+        {% if board.board_type == 'notice' %}
+          <span class="badge badge-notice">공지</span>
+        {% elif board.board_type == 'free' %}
+          <span class="badge badge-free">자유</span>
+        {% else %}
+          <span class="badge badge-qna">Q&A</span>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <h2 class="view-title">{{ board.title }}</h2>
+
+    <div class="meta">
+      <span><i class="fa-solid fa-user"></i> {{ board.writer_name }} ({{ board.writer_uid }})</span>
+      <span><i class="fa-regular fa-clock"></i> {{ board.display_date if board.display_date else board.created_at }}</span>
+      <span><i class="fa-regular fa-eye"></i> 조회 {{ board.view_count }}</span>
+      <span><i class="fa-regular fa-heart"></i> 좋아요 <span id="like-count">{{ like_count }}</span></span>
+    </div>
+
+    <div class="content">{{ board.content }}</div>
+
+    <div class="actions">
+      <div class="btns-left">
+        <a class="btn" href="/board/list?type={{ board.board_type }}">
+          <i class="fa-solid fa-list"></i> 목록
+        </a>
+      </div>
+
+      <div class="btns-right">
+        <!-- ✅ 좋아요 AJAX 토글 -->
+        <button class="btn btn-primary" type="button" onclick="toggleLike({{ board.id }})">
+          <i class="fa-solid fa-heart"></i> 좋아요
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 댓글 카드 ===== -->
+  <div class="comment-card">
+    <div class="comment-title">
+      <span><i class="fa-regular fa-comment-dots"></i> 댓글 ({{ comments|length }})</span>
+      <span class="muted">* 대댓글은 “답글” 버튼으로 작성</span>
+    </div>
+
+    {% for c in comments %}
+      <div class="comment-item {% if c.parent_id %}reply{% endif %}">
+        <div class="comment-meta">
+          <div class="comment-meta-left">
+            <span><i class="fa-solid fa-user"></i> {{ c.name }} ({{ c.uid }})</span>
+            <span><i class="fa-regular fa-clock"></i> {{ c.created_at }}</span>
+            {% if c.parent_id %}
+              <span style="font-weight:900; color:#4c3ef0;">답글</span>
+            {% endif %}
+          </div>
+
+          {% if 'user_id' in session %}
+            <!-- ✅ 대댓글 버튼 -->
+            <button type="button" class="reply-btn" onclick="toggleReplyForm('{{ c.id }}')">
+              답글
+            </button>
+          {% endif %}
+        </div>
+
+        <div class="comment-content">{{ c.content }}</div>
+
+        {% if 'user_id' in session %}
+          <!-- ✅ 대댓글 작성 폼 (숨김) -->
+          <form id="reply-form-{{ c.id }}" class="reply-form" method="post" action="/board/comment/add" style="display:none;">
+            <input type="hidden" name="board_id" value="{{ board.id }}">
+            <input type="hidden" name="parent_id" value="{{ c.id }}">
+            <textarea name="content" placeholder="대댓글을 작성하세요..." required></textarea>
+            <button type="submit">대댓글 등록</button>
+          </form>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    {% if comments|length == 0 %}
+      <div class="muted" style="padding:6px 2px;">아직 댓글이 없습니다.</div>
+    {% endif %}
+
+    <!-- ✅ 댓글 등록 -->
+    {% if 'user_id' in session %}
+      <form class="comment-form" method="post" action="/board/comment/add">
+        <input type="hidden" name="board_id" value="{{ board.id }}">
+        <textarea name="content" placeholder="댓글을 작성하세요..." required></textarea>
+        <button type="submit"><i class="fa-solid fa-paper-plane"></i> 댓글 등록</button>
+      </form>
+    {% else %}
+      <div class="muted" style="margin-top:10px;">댓글을 작성하려면 로그인하세요.</div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ✅ 대댓글 폼 토글
+  function toggleReplyForm(id){
+    const el = document.getElementById("reply-form-" + id);
+    if(!el) return;
+    el.style.display = (el.style.display === "none" || el.style.display === "") ? "flex" : "none";
+  }
+
+  // ✅ 좋아요 토글(AJAX)
+  async function toggleLike(boardId){
+    try{
+      const res = await fetch("/board/like/toggle", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({board_id: boardId})
+      });
+
+      if(res.status === 401){
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      const data = await res.json();
+      if(!data.ok){
+        alert("처리 실패");
+        return;
+      }
+
+      const likeCount = document.getElementById("like-count");
+      if(likeCount) likeCount.textContent = data.count;
+
+    }catch(e){
+      alert("통신 오류");
+    }
+  }
+</script>
+{% endblock %}
